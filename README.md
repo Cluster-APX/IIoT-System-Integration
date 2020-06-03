@@ -2,7 +2,7 @@
 Code สำหรับใช้ในการเรียนการสอนวิชา System Integration โครงการ IIoT
 
 # System Overview
-![System Overview](Doc/System%20Overview%20-%202020-05-14%20A.jpg)
+![System Overview](Doc/System%20Overview%20-%202020-06-03%20A.jpg)
 
 - [Plant Simulation 2020]([Application](https://github.com/Cluster-APX/Plant-Simulation-2020))
 - [Computer Vision](Example/Computer%20Vision)
