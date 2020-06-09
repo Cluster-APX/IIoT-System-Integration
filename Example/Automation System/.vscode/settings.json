@@ -1,0 +1,5 @@
+{
+	"python.pythonPath": "C:\\Users\\cluster\\Miniconda3\\envs\\iiot\\python.exe",
+	"python.linting.pylintEnabled": true,
+	"python.linting.enabled": false
+}
