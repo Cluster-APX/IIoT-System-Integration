@@ -13,10 +13,6 @@ import serial
 # เปิดใช้งาน Com Port
 port = serial.Serial(port='COM2', baudrate=115200, bytesize=8, parity='N', stopbits=1, timeout=0, xonxoff=0, rtscts=0, dsrdtr=0)
 
-def MyDelay(sec):
-    # time.sleep(sec)
-    pass
-
 # Main Loop
 print("Entering Main Loop ...")
 while True:
