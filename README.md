@@ -1,5 +1,5 @@
 # IIoT-System-Integration
-Code สำหรับใช้ในการเรียนการสอนวิชา System Integration โครงการ IIoT 2020
+Code สำหรับใช้ในการเรียนการสอนในโครงการ`การประยุกต์ใช้จริงของเทคโนโลยีไอโอทีสำหรับภาคอุตสาหกรรม (Industrial Internet of Things: IIoT) ร่วมกับระบบฝังตัว (Embedded System) เทคโนโลยีความจริงเสริม (Augmented Reality: AR) และคอมพิวเตอร์วิชั่น (Computer Vision)`
 
 ## ตัวอย่าง
 - [Virtual Sensor](Example/Virtual%20Sensor)
@@ -23,5 +23,21 @@ Code สำหรับใช้ในการเรียนการสอน
 
 # Application
 - [Plant Simulation 2020](https://github.com/Cluster-APX/Plant-Simulation-2020)
-- [Computer Vision](Example/Computer%20Vision)
+- Computer Vision
 - Embedded Simulation
+
+# การใช้งาน
+## Plant Simulation (Unity)
+- เปิดใช้งาน `FIBO Plant Simulator 2020.exe`
+- ตั้งค่า Resolution `1920x1080`
+
+## Computer Vision (Python)
+- ตั้งค่า Resolution ใน Code ให้ตรงตาม Plant Simulation
+- สำหรับเครื่องที่ใช้ CPU ที่มี APU ต้องทำการตั้งค่าให้ Python ใช้งาน GPU ในการ Redner ดังนี้
+  - Nvidia GPU
+    - เปิดโปรแกรม NVIDIA Control Panel
+    - Manage 3D Setting -> Program Settings
+    - `1. Select a program to customize:` = python.exe
+    - `2. Select the preferred graphics processor for this program:` = High-performance NVIDIA processor
+  - AMD GPU
+    - ?
