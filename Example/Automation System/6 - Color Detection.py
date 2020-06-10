@@ -70,8 +70,8 @@ def main():
     # สร้าง GUI สำหรับปรับค่าการตรวจจับสี
     # settings
     cv2.namedWindow("Settings", cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)
-    cv2.createTrackbar("lower", "Settings", 42, 180, MyNothing)
-    cv2.createTrackbar("upper", "Settings", 62, 180, MyNothing)
+    cv2.createTrackbar("lower", "Settings", 50, 180, MyNothing)
+    cv2.createTrackbar("upper", "Settings", 88, 180, MyNothing)
 
     # loop for graph frame by frame
     while(True):
@@ -89,10 +89,10 @@ def main():
 
         # copy pixel byte array from received texture - this example doesn't use it, but may be useful for those who do want pixel info
         # แปลงภาพ Texture ใน OpenGL เป็นข้อมูลภาพของ OpenCV
-        data = glGetTexImage(GL_TEXTURE_2D, 0, GL_BGR, GL_UNSIGNED_BYTE, outputType=None)  #Using GL_RGB can use GL_RGBA
+        img_opencv = glGetTexImage(GL_TEXTURE_2D, 0, GL_BGR, GL_UNSIGNED_BYTE, outputType=None)  #Using GL_RGB can use GL_RGBA
 
         # swap width and height data around due to oddness with glGetTextImage. http://permalink.gmane.org/gmane.comp.python.opengl.user/2423
-        data.shape = (data.shape[1], data.shape[0], data.shape[2])
+        img_opencv.shape = (img_opencv.shape[1], img_opencv.shape[0], img_opencv.shape[2])
 
         # setup window to draw to screen
         glActiveTexture(GL_TEXTURE0)
@@ -130,17 +130,17 @@ def main():
         # ตัดภาพบริเวรที่สนใจ (ตรงกลาง 100x100)
         px  = int((width / 2) - 50)
         py  = int((height / 2) - 50)
-        img_crop   = data[py:py + 100, px:px + 100, :]
+        img_crop   = img_opencv[py:py + 100, px:px + 100, :]
 
         # เฉลี่ยนค่าสีจากรูปที่ผ่านการ Filter
-        color_avg_current   = MyAverageValueInHSV(img_crop, 42, 62)
+        color_avg_current   = MyAverageValueInHSV(img_crop)
         print("color avg={}".format(color_avg_current))
 
         # Filter เฉพาะสีที่ต้องการ
-        img_filter = MyFilterColor(data)
+        img_filter = MyFilterColor(img_opencv)
 
         # แสดงภาพ
-        cv2.imshow("OpenCV", data)
+        cv2.imshow("OpenCV", img_opencv)
         cv2.imshow("Filter", img_filter)
         cv2.imshow("CROP", img_crop)
 
@@ -173,7 +173,7 @@ def MyFilterColor(src):
 
     return  img_res
 
-def MyAverageValueInHSV(src, value_begin, value_final):
+def MyAverageValueInHSV(src):
     # แปลงภาพ RGB เป็น HSV
     img_hsv = cv2.cvtColor(src, cv2.COLOR_BGR2HSV)
 

@@ -108,8 +108,8 @@ def main():
     # สร้าง GUI สำหรับปรับค่าการตรวจจับสี
     # settings
     cv2.namedWindow("Settings", cv2.WINDOW_NORMAL | cv2.WINDOW_KEEPRATIO)
-    cv2.createTrackbar("lower", "Settings", 42, 180, MyNothing)
-    cv2.createTrackbar("upper", "Settings", 62, 180, MyNothing)
+    cv2.createTrackbar("lower", "Settings", 50, 180, MyNothing)
+    cv2.createTrackbar("upper", "Settings", 88, 180, MyNothing)
 
     # loop for graph frame by frame
     while(True):
@@ -129,10 +129,10 @@ def main():
 
         # copy pixel byte array from received texture - this example doesn't use it, but may be useful for those who do want pixel info
         # แปลงภาพ Texture ใน OpenGL เป็นข้อมูลภาพของ OpenCV
-        data = glGetTexImage(GL_TEXTURE_2D, 0, GL_BGR, GL_UNSIGNED_BYTE, outputType=None)  #Using GL_RGB can use GL_RGBA
+        img_opencv = glGetTexImage(GL_TEXTURE_2D, 0, GL_BGR, GL_UNSIGNED_BYTE, outputType=None)  #Using GL_RGB can use GL_RGBA
 
         # swap width and height data around due to oddness with glGetTextImage. http://permalink.gmane.org/gmane.comp.python.opengl.user/2423
-        data.shape = (data.shape[1], data.shape[0], data.shape[2])
+        img_opencv.shape = (img_opencv.shape[1], img_opencv.shape[0], img_opencv.shape[2])
 
         # setup window to draw to screen
         glActiveTexture(GL_TEXTURE0)
@@ -167,22 +167,67 @@ def main():
 
         ### เริ่มต้นประมวลผลภาพด้วย OpenCV ###
 
-        # ตัดภาพบริเวรที่สนใจ (ตรงกลาง 100x100)
-        px  = int((width / 2) - 50)
-        py  = int((height / 2) - 50)
-        img_crop   = data[py:py + 100, px:px + 100, :]
+        # สั่งให้ Slave อ่านค่าจาก Sensor
+        print("Request Reading ...")
+        port.write(b'0')
 
-        # เฉลี่ยนค่าสีจากรูปที่ผ่านการ Filter
-        color_avg_current   = MyAverageValueInHSV(img_crop, 42, 62)
-        print("color avg={}".format(color_avg_current))
+        # รอการตอบกลับจาก Slave
+        print("Waiting for Result from Slave ...")
+        while port.inWaiting() == 0:
+            time.sleep(0.001)
 
-        # Filter เฉพาะสีที่ต้องการ
-        img_filter = MyFilterColor(data)
+        # มีข้อมูลตอบกลับจาก Slave
+        data    = b''
+        while port.inWaiting() > 0:
+            data = port.read(port.inWaiting())
+            print("Result=" + str(data))
+
+            # ตรวจสอบข้อมูลจาก Sensor ว่าตรวจพบวัตถุหรือไม่
+            if data == b'1':    # พบวัตถุ
+
+                # ตัดภาพบริเวรที่สนใจ (ตรงกลาง 50x50)
+                px  = int((width / 2) - 25) - 100
+                py  = int((height / 2) - 25)
+                img_crop   = img_opencv[py:py + 50, px:px + 50, :]
+                cv2.imshow("CROP", img_crop)
+
+                # เฉลี่ยนค่าสีจากรูปที่ผ่านการ Filter
+                color_avg_current   = MyAverageValueInHSV(img_crop)
+                print("color avg={}".format(color_avg_current))
+
+                # ตรวจสอบค่าของสีว่าตรงตามเงื่อนใขหรือไม่
+                color_blue = color_avg_current >= 120-20 and color_avg_current <= 120+20
+                if color_blue :
+                    # ค่าสีตรงตามเงื่อนใข
+                    print("Pass")
+                    # ข้อมูลสำหรับส่งไปยัง Thingsboard อยู่ในรูปแบบ JSON
+                    # ส่งข้อมูลไปยัง Thingsboard ด้วย MQTT
+                    CLIENT.publish("v1/devices/me/telemetry", str("{detection:1, rejection:0, color:" + str(color_avg_current) + "}"))
+
+                else:
+                    # ค่าสีไม่ตรงตามเงื่อนใข
+                    print("Reject")
+                    time.sleep(0.1)
+                    # สั่งให้ Slave ควบคุม Actuator มีสถานะ Active
+                    port.write(b'2')
+                    time.sleep(0.5)
+                    # สั่งให้ Slave ควบคุม Actuator มีสถานะ Dective
+                    port.write(b'1')
+                    time.sleep(0.5)
+
+                    # ข้อมูลสำหรับส่งไปยัง Thingsboard อยู่ในรูปแบบ JSON
+                    # ส่งข้อมูลไปยัง Thingsboard ด้วย MQTT
+                    CLIENT.publish("v1/devices/me/telemetry", str("{detection:1, rejection:1, color:" + str(color_avg_current) + "}"))
+
+            else:   # ไม่พบ
+                # ข้อมูลสำหรับส่งไปยัง Thingsboard อยู่ในรูปแบบ JSON
+                # ส่งข้อมูลไปยัง Thingsboard ด้วย MQTT
+                CLIENT.publish("v1/devices/me/telemetry", str("{detection:0}"))
 
         # แสดงภาพ
-        cv2.imshow("OpenCV", data)
-        cv2.imshow("Filter", img_filter)
-        cv2.imshow("CROP", img_crop)
+        cv2.imshow("OpenCV", img_opencv)
+
+        print("")
 
         if (cv2.waitKey(1) == 27):
             CLIENT.loop_stop()
@@ -227,7 +272,7 @@ def MyFilterColor(src):
 
     return  img_res
 
-def MyAverageValueInHSV(src, value_begin, value_final):
+def MyAverageValueInHSV(src):
     # แปลงภาพ RGB เป็น HSV
     img_hsv = cv2.cvtColor(src, cv2.COLOR_BGR2HSV)
 

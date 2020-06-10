@@ -73,10 +73,10 @@ def main():
 
         # copy pixel byte array from received texture - this example doesn't use it, but may be useful for those who do want pixel info
         # แปลงภาพ Texture ใน OpenGL เป็นข้อมูลภาพของ OpenCV
-        data = glGetTexImage(GL_TEXTURE_2D, 0, GL_BGR, GL_UNSIGNED_BYTE, outputType=None)  #Using GL_RGB can use GL_RGBA
+        img_opencv = glGetTexImage(GL_TEXTURE_2D, 0, GL_BGR, GL_UNSIGNED_BYTE, outputType=None)  #Using GL_RGB can use GL_RGBA
 
         # swap width and height data around due to oddness with glGetTextImage. http://permalink.gmane.org/gmane.comp.python.opengl.user/2423
-        data.shape = (data.shape[1], data.shape[0], data.shape[2])
+        img_opencv.shape = (img_opencv.shape[1], img_opencv.shape[0], img_opencv.shape[2])
 
         # setup window to draw to screen
         glActiveTexture(GL_TEXTURE0)
@@ -112,7 +112,7 @@ def main():
         ### เริ่มต้นประมวลผลภาพด้วย OpenCV ###
 
         # แสดงภาพ
-        cv2.imshow("OpenCV", data)
+        cv2.imshow("OpenCV", img_opencv)
 
         if (cv2.waitKey(1) == 27):
             spoutReceiver.ReleaseReceiver()
