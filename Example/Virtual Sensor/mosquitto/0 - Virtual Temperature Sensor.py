@@ -10,5 +10,5 @@ while True:
 
 	print("message=" + str(message))
 
-	os.system("mosquitto_pub -p 1150 -t v1/devices/me/telemetry -u pKMQ15EphiT9gPUB72ty -m " + str(message))
+	os.system("mosquitto_pub -p 1150 -t v1/devices/me/telemetry -u wNk9wsgtDCIOlZS3tVwc -m " + str(message))
 	time.sleep(1)
