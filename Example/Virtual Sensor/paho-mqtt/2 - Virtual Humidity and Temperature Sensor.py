@@ -6,7 +6,7 @@ import paho.mqtt.client as mqtt
 # Thingsboard
 THINGSBOARD_HOST	= "localhost"
 THINGSBOARD_MQTT_PORT	= 1150
-THINGSBOARD_TOKEN	= "Jc1vLi5B0JOR6WpeSxjU"
+THINGSBOARD_TOKEN	= "bKEbVF1V9mIZ3NKs2lZl"
 
 # MQTT
 IsMqttConnect	= False
